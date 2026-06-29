@@ -7,10 +7,17 @@ services:
     container_name: acr-backend
     ports:
       - "8000:8000"
-    volumes:
-      - registrations_data:/app/backend/data
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME:-}
+      # Apunta al archivo de credenciales montado en el contenedor
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcp/key.json
+    volumes:
+      # Fallback local cuando GCS_BUCKET_NAME está vacío
+      - registrations_data:/app/backend/data
+      # Monta la clave de servicio GCP (solo dev local con GCS)
+      # Configura GCP_KEY_FILE=/ruta/a/key.json en tu .env
+      - ${GCP_KEY_FILE:-/dev/null}:/gcp/key.json:ro
     healthcheck:
       test: >
         python -c

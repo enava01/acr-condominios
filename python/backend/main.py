@@ -22,9 +22,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Storage config ────────────────────────────────────────────────────────────
+GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "")
+GCS_OBJECT_NAME = "registrations.json"
+
+# Local fallback (used when GCS_BUCKET_NAME is not set)
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-REGISTRATIONS_FILE = os.path.join(DATA_DIR, "registrations.json")
-os.makedirs(DATA_DIR, exist_ok=True)
+LOCAL_FILE = os.path.join(DATA_DIR, "registrations.json")
 
 TorreType = Literal["A", "B", "C", "D", "E", "F"]
 StatusType = Literal["Pendiente", "Aprobado", "Rechazado", "En Revisión"]
@@ -196,20 +200,48 @@ Responde SOLO el JSON, sin explicaciones adicionales.
 """
 
 
+def _gcs_blob():
+    from google.cloud import storage
+    return storage.Client().bucket(GCS_BUCKET_NAME).blob(GCS_OBJECT_NAME)
+
+
 def read_registrations() -> list[dict]:
-    if not os.path.exists(REGISTRATIONS_FILE):
+    if GCS_BUCKET_NAME:
+        try:
+            blob = _gcs_blob()
+            if not blob.exists():
+                write_registrations(SEED_DATA)
+                return list(SEED_DATA)
+            return json.loads(blob.download_as_text(encoding="utf-8"))
+        except Exception as exc:
+            print(f"[GCS] read error: {exc}")
+            return list(SEED_DATA)
+
+    # ── local fallback ────────────────────────────────────────────────────────
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if not os.path.exists(LOCAL_FILE):
         write_registrations(SEED_DATA)
         return list(SEED_DATA)
     try:
-        with open(REGISTRATIONS_FILE, "r", encoding="utf-8") as f:
+        with open(LOCAL_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return list(SEED_DATA)
 
 
 def write_registrations(registrations: list[dict]) -> None:
-    with open(REGISTRATIONS_FILE, "w", encoding="utf-8") as f:
-        json.dump(registrations, f, ensure_ascii=False, indent=2)
+    payload = json.dumps(registrations, ensure_ascii=False, indent=2)
+    if GCS_BUCKET_NAME:
+        try:
+            _gcs_blob().upload_from_string(payload, content_type="application/json")
+        except Exception as exc:
+            print(f"[GCS] write error: {exc}")
+        return
+
+    # ── local fallback ────────────────────────────────────────────────────────
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(LOCAL_FILE, "w", encoding="utf-8") as f:
+        f.write(payload)
 
 
 def now_iso() -> str:

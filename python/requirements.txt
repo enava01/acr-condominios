@@ -7,3 +7,4 @@ requests>=2.31.0
 plotly>=5.17.0
 python-multipart>=0.0.9
 google-genai>=0.3.0
+google-cloud-storage>=2.16.0
