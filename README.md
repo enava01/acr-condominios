@@ -4,6 +4,18 @@ Sistema para la acreditación digital de propiedades en condominios multifamilia
 
 ---
 
+## 🌐 Producción (Cloud Run)
+
+| Servicio | URL |
+|---|---|
+| **Portal Residente** | https://acr-residente-s2zq6oducq-uc.a.run.app |
+| **Panel Admin** | https://acr-admin-s2zq6oducq-uc.a.run.app |
+| **Backend API** | https://acr-backend-s2zq6oducq-uc.a.run.app |
+
+> GCP Project: `acr-condominios-2026` · Region: `us-central1` · Storage: `gs://acr-condominios-data`
+
+---
+
 ## Clientes
 
 | Cliente | Descripción | Puerto |
