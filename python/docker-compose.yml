@@ -1,0 +1,54 @@
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: acr-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - registrations_data:/app/backend/data
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    healthcheck:
+      test: >
+        python -c
+        "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/registrations')"
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+    restart: unless-stopped
+
+  cliente_residente:
+    build:
+      context: .
+      dockerfile: cliente_residente/Dockerfile
+    container_name: acr-residente
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cliente_admin:
+    build:
+      context: .
+      dockerfile: cliente_admin/Dockerfile
+    container_name: acr-admin
+    ports:
+      - "8502:8502"
+    environment:
+      - API_BASE_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  registrations_data:
+    name: acr-registrations
