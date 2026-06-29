@@ -1,0 +1,23 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Streamlit
+.streamlit/
+
+# Data (generado en runtime)
+python/backend/data/registrations.json

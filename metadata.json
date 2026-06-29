@@ -1,0 +1,6 @@
+{
+  "name": "Acreditación de Propiedad de Condominio",
+  "description": "Aplicación para la extracción inteligente de datos de acreditación de propiedad de condominios utilizando Gemini Lite, con prellenado de formularios para residentes y un panel de administración para el control de registro por torre.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
